@@ -7,18 +7,20 @@ MIDI representations
 Files
 -----
 
-data/
-    training/*.mid
-        - Midi files used for training the algorithm.  Comprises 2/3rds of
-          the midi's we've gathered
-    testing/*.mid
-        - Midi files used for testing the algorithm.  Comprises 1/3rd of the
-          midi's we've gathered
-    training_counts.data
-        - A serialized set of counts for observations in the training data.
-          The file is a pickel'd python dict, with two sub-structures, one a
-          list files that have been processed so far, and the other a dict
-          of counts, with 1 through 32-wise observations
+`
+    data/
+        training/*.mid
+            - Midi files used for training the algorithm.  Comprises 2/3rds of
+              the midi's we've gathered
+        testing/*.mid
+            - Midi files used for testing the algorithm.  Comprises 1/3rd of the
+              midi's we've gathered
+        training_counts.data
+            - A serialized set of counts for observations in the training data.
+              The file is a pickel'd python dict, with two sub-structures, one a
+              list files that have been processed so far, and the other a dict
+              of counts, with 1 through 32-wise observations
+`
 
 Installing
 ----------
