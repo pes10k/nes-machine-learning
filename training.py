@@ -1,6 +1,5 @@
 import os
 from utils import trim_song, sized_observation_from_index
-from pprint import pprint
 
 try:
     import cpickle as pickle
@@ -10,7 +9,7 @@ except ImportError:
 try:
     import midi
 except ImportError:
-    print "Error: Can't import Midi package.  Did you run `python setup.py install from ./contrib/python-midi?"
+    print "Error: Can't import Midi package.  Did you run `python setup.py install` from ./contrib/python-midi?"
 
 data_dir = os.path.join("data")
 max_channel_to_capture = 3

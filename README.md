@@ -7,7 +7,6 @@ MIDI representations
 Files
 -----
 
-`
     data/
         training/*.mid
             - Midi files used for training the algorithm.  Comprises 2/3rds of
@@ -20,12 +19,13 @@ Files
               The file is a pickel'd python dict, with two sub-structures, one a
               list files that have been processed so far, and the other a dict
               of counts, with 1 through 32-wise observations
-`
+
 
 Installing
 ----------
 
 Just install python-midi by running:
+
     cd contrib/python-midi
     python setup.py install
 
