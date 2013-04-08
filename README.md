@@ -26,11 +26,13 @@ Installing
 
 Just install python-midi by running:
 
-    cd contrib/python-midi
-    python setup.py install
+ 1.  `cd contrib/python-midi`
+ 2.  `python setup.py install`
+
 
 Related Software
 ----------------
+
  *  [nes2midi](http://gigo.retrogames.com/)
     Windows tool for converting [NSF](http://en.wikipedia.org/wiki/NES_Sound_Format) files to [MIDI](http://en.wikipedia.org/wiki/MIDI).  The original software is in Japanese, but there is thankfully an [English translation](http://www.neshq.com/nsf/nsf2mid-0.131-eng.zip) too!
  *  [WINE](http://www.winehq.org/)
