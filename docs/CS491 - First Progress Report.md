@@ -25,6 +25,7 @@ Because of these findings, we have decided to treat all third party data as unre
 Description of Data
 -------------------
 For the purposes of our project, MIDI data is made up of several types of information:
+
  *  **Instruments**: A description of how a synthesized tone should be generated. This includes details like wave forms, effects, and other descriptions of what should generate the waveform.
  *  **Events**: Records of changes in the what an instrument is doing, such as a note started playing, or the volume of the tracked changed.
  *  **Channels**: Pairs of instruments and events.  MIDI recordings can have up to 16 channels, simultaneously recorded and performing events.
