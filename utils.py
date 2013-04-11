@@ -16,10 +16,16 @@ def normalize_song(song, length=None):
 
 
 def strip_header_off_song(song):
-    index = 0
-    while sum([track[index] for track in song.values()]) == 0:
-        index += 1
-    return {k: v[index:] for k, v in song.items()}
+    # First check for the trivial corner case of having an empty song
+    is_empty = sum([sum(channel) for channel in song.values()]) == 0
+
+    if is_empty:
+        return {i: [] for i in range(0, 3)}
+    else:
+        index = 0
+        while sum([track[index] for track in song.values()]) == 0:
+            index += 1
+        return {k: v[index:] for k, v in song.items()}
 
 
 def strip_end_off_song(song):

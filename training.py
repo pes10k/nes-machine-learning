@@ -15,8 +15,6 @@ data_dir = os.path.join("data")
 max_channel_to_capture = 3
 prev_frames_to_record = 32
 
-training_files = ["1.mid"]
-
 persistant_store_path = os.path.join(os.getcwd(), data_dir, 'training_counts.data')
 store_handle = open(persistant_store_path, 'rb')
 
