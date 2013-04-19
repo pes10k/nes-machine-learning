@@ -1,4 +1,5 @@
 import os
+import math
 from utils import trim_song, sized_observation_from_index
 
 try:
@@ -30,11 +31,21 @@ counts_dict = persistant_store['counts']
 #print counts_dict['79|54|42.79|54|40']
 #print counts_dict.get('79|54|42')
 
+#test songs' path
 test_data_dir = os.path.join("test_data")
+#path of file to store scores
+score_store_path = os.path.join(os.getcwd(), data_dir, 'scores.data')
+
+score_store = dict(files=[], counts=dict())
 
 for root, dirs, files in os.walk(test_data_dir):
 	for name in [a_file for a_file in files if a_file[-4:] == ".mid"]:
 		relative_test_file_path = os.path.join(root, name)
+
+		print 'Adding %s into path array'
+		score_store['files'].append(relative_test_file_path)
+		score_store.setdefault(relative_test_file_path, dict())
+		tmp_score = score_store[relative_test_file_path]
 
 		song = {}
 		handle = open(relative_test_file_path)
@@ -63,9 +74,44 @@ for root, dirs, files in os.walk(test_data_dir):
 		song = trim_song(song, length=2500)
 		song_len = len(song[0])
 		
+		count = 0
+		score = 0.0
+		tmp = 0.0
+		content = ''
+		frame_next = sized_observation_from_index(song, start=0, length=1)
 		for x in range(0, song_len):
 			y=1;
-			frame = sized_observation_from_index(song, start=x, length=y)
-			print frame
-		print "finished calculating counts from %s" % (relative_test_file_path,)
+			if x == 0:
+				frame_next = sized_observation_from_index(song, start=x, length=y)
+				#print counts_dict.get(frame_next)
+				if counts_dict.get(frame_next) == None:
+					tmp = 1
+				else:
+					tmp = counts_dict[frame_next]
+				#print tmp;
+				score -= math.log(tmp);
+			else:
+				frame_previous = frame_next;	
+				frame_next = sized_observation_from_index(song, start=x, length=y)
+				content = frame_previous + '.' + frame_next
+				#print content
+				#print counts_dict.get(content)
+				if counts_dict.get(content) == None:
+					tmp = 1
+				else:
+					tmp = counts_dict.get(content)
+				score -= math.log(tmp)
+				if counts_dict.get(frame_previous) == None:
+					tmp = 1
+				else:
+					tmp = counts_dict[frame_previous]
+				score += math.log(tmp)
+		print score 
+		tmp_score.setdefault(1,0)
+		tmp_score[1] = score
+		print tmp_score
+print score_store	
 
+score_handle = open(score_store_path, 'w')
+pickle.dump(score_store, score_handle)
+score_handle.close()

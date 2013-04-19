@@ -1,0 +1,26 @@
+(dp0
+S'files'
+p1
+(lp2
+S'test_data/Mega Man/1.mid'
+p3
+aS'test_data/Mega Man 2/1.mid'
+p4
+aS'test_data/Mega Man 2/2.mid'
+p5
+asg4
+(dp6
+I1
+F1648.27538644026
+ssS'counts'
+p7
+(dp8
+sg5
+(dp9
+I1
+F1532.6576392957481
+ssg3
+(dp10
+I1
+F621.1910558956193
+ss.
