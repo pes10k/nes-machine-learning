@@ -28,13 +28,10 @@ except (EOFError, IOError) as e:
 store_handle.close()
 counts_dict = persistant_store['counts']
 
-#print counts_dict['79|54|42.79|54|40']
-#print counts_dict.get('79|54|42')
-
 #test songs' path
 test_data_dir = os.path.join("test_data")
 #path of file to store scores
-score_store_path = os.path.join(os.getcwd(), data_dir, 'scores.data')
+score_store_path = os.path.join(os.getcwd(), test_data_dir, 'scores.data')
 
 score_store = dict(files=[], counts=dict())
 
@@ -75,39 +72,52 @@ for root, dirs, files in os.walk(test_data_dir):
 		song_len = len(song[0])
 	
 		print 'Length is %d.'% song_len
-		count = 0
-		score = 0.0
-		tmp = 0.0
-		content = ''
+		
+		#content = ''
 		for y in range(1, prev_frames_to_record + 1):
-			frame_next = sized_observation_from_index(song, start=0, length=y)
+			#frame_next = sized_observation_from_index(song, start=0, length=y)
+			numerater = ''
+			denominator = ''
+			tmp = 0
+			score = 0
+			count = 0
 			for x in range(0, song_len):
 				if x == 0:
-					frame_next = sized_observation_from_index(song, start=x, length=y)
-				#	print counts_dict.get(frame_next)
-					if counts_dict.get(frame_next) == None:
-						tmp = 1
-					else:
-						tmp = counts_dict[frame_next]
-					#print tmp;
-					score -= math.log(tmp);
+					#frame_next = sized_observation_from_index(song, start=x, length=1)
+					numerater = sized_observation_from_index(song, start=x, length=1)
+					denominator = '-1|-1|-1'
+					for z in range(1, y):
+						#frame_next = '-1|-1|-1' + '.' + frame_next
+						numerater = '-1|-1|-1.' + numerater
+						if y>1:
+							denominator = '-1|-1|-1.' + denominator
+					#tmp = 1 if counts_dict.get(frame_next) == None else tmp = counts_dict[frame_next]
+					#score -= math.log(tmp);
+					#tmp = 1 if count_dict.get(numerater) == None else tmp = counts_dict[numerater]
+					#score -= math.log(tmp)
+					#tmp = 1 if count_dict.get(denominator) = None else tmp = counts_dict[denominator]
+					#score += math.log(tmp)
 				else:
-					frame_previous = frame_next;	
-					frame_next = sized_observation_from_index(song, start=x, length=y)
-					content = frame_previous + '.' + frame_next
-					#print content
-					#print counts_dict.get(content)
-					if counts_dict.get(content) == None:
-						tmp = 1
-					else:
-						tmp = counts_dict.get(content)
-					score -= math.log(tmp)
-					if counts_dict.get(frame_previous) == None:
-						tmp = 1
-					else:
-						tmp = counts_dict[frame_previous]
-					score += math.log(tmp)
-			#print score 
+					#frame_previous = frame_next;	
+					#frame_next = sized_observation_from_index(song, start=x, length=y)
+					#content = frame_previolus + '.' + frame_next
+
+					tmp_index = numerater.find('.')
+					denominator = numerater[tmp_index+1:]
+					numerater = numerater[tmp_index+1:]
+					next_frame = sized_observation_from_index(song, start=x, length=1)
+					numerater = numerater + '.' + next_frame
+
+					#tmp = 1 if counts_dict.get(content) == None else tmp = counts_dict[content] 
+					#score -= math.log(tmp)
+					#tmp = 1 if counts_dict.get(frame_previous) == None else tmp = counts_dict[previous]
+					#score += math.log(tmp)
+				tmp = 1 if count_dict.get(numerater) == None else tmp = counts_dict[numerater]
+				score -= math.log(tmp)
+				tmp = 1 if count_dict.get(denominator) == None else tmp = counts_dict[denominator]
+				score += math.log(tmp)
+
+			#print score
 			tmp_score.setdefault(y,0)
 			tmp_score[y] = score
 			##print tmp_score
