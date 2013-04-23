@@ -24,9 +24,14 @@ Files
 Installing
 ----------
 
-Just install python-midi by running:
+install python-midi by running:
 
  1.  `cd contrib/python-midi`
+ 2.  `python setup.py install`
+
+install MIDIUtil by running:
+
+ 1.	 `cd coutrib/MIDIUtil`
  2.  `python setup.py install`
 
 
