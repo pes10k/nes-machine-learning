@@ -60,6 +60,7 @@ for root, dirs, files in os.walk(data_dir):
         #     print "|".join([str(chanel[x]) for chanel in song.values()])
         #     #print "%d: %s" % (k, ["%03d" % (i,) for i in song[k]])
         # break
+        store.record_obs('S|S|S')
         for x in range(0, song_len):
             for y in range(1, prev_frames_to_record + 1):
                 frame = sized_observation_from_index(song, start=x, length=y)

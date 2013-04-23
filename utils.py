@@ -39,6 +39,23 @@ def serialize_observation(song, index):
     return "|".join(current_observation)
 
 
+def flatten_redundant_starts(frames):
+    first_non_start = -1
+    last_viewed_frame = -1
+    for i in range(0, len(frames)):
+        last_viewed_frame += 1
+        if frames[i] != "S|S|S":
+            first_non_start = i
+            break
+
+    if first_non_start > 0:
+        frames[first_non_start:]
+    elif last_viewed_frame == len(frames) - 1:
+        frames = frames[0:1]
+
+    return frames
+
+
 def sized_observation_from_index(song, start=0, length=1):
     song_length = len(song[0])
     pre_flow = (start - length) + 1
