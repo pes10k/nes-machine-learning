@@ -1,10 +1,6 @@
 import os
+import store
 from utils import trim_song, sized_observation_from_index
-
-try:
-    import cpickle as pickle
-except ImportError:
-    import pickle
 
 try:
     import midi
@@ -13,31 +9,19 @@ except ImportError:
 
 data_dir = os.path.join("data")
 max_channel_to_capture = 3
-prev_frames_to_record = 32
+prev_frames_to_record = 16
 
-persistant_store_path = os.path.join(os.getcwd(), data_dir, 'training_counts.data')
-store_handle = open(persistant_store_path, 'rb')
-
-try:
-    print "Appending to current data store"
-    persistant_store = pickle.load(store_handle)
-except (EOFError, IOError) as e:
-    print "Starting with empty data store"
-    persistant_store = dict(files=[], counts=dict())
-
-store_handle.close()
-counts_dict = persistant_store['counts']
 
 for root, dirs, files in os.walk(data_dir):
     for name in [a_file for a_file in files if a_file[-4:] == ".mid"]:
         relative_file_path = os.path.join(root, name)
 
-        if False and relative_file_path in persistant_store['files']:
+        if store.has_file_been_recorded(relative_file_path):
             print "Not recalculating counts for %s" % (relative_file_path,)
             continue
         else:
             print "Beginning to calculate counts for %s" % (relative_file_path,)
-            persistant_store['files'].append(relative_file_path)
+            store.record_file(relative_file_path)
 
         song = {}
         handle = open(relative_file_path)
@@ -76,14 +60,9 @@ for root, dirs, files in os.walk(data_dir):
         #     print "|".join([str(chanel[x]) for chanel in song.values()])
         #     #print "%d: %s" % (k, ["%03d" % (i,) for i in song[k]])
         # break
-
         for x in range(0, song_len):
             for y in range(1, prev_frames_to_record + 1):
                 frame = sized_observation_from_index(song, start=x, length=y)
-                counts_dict.setdefault(frame, 0)
-                counts_dict[frame] += 1
+                store.record_obs(frame)
+        store.commit()
         print "finished calculating counts from %s" % (relative_file_path,)
-
-store_handle = open(persistant_store_path, 'wb')
-pickle.dump(persistant_store, store_handle)
-store_handle.close()

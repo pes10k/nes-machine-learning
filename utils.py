@@ -47,7 +47,7 @@ def sized_observation_from_index(song, start=0, length=1):
     # if the requested section flows past the start of the song, pad the
     # returned set with 0's
     if pre_flow < 0:
-        frames = ".".join(["0|0|0"] * abs(pre_flow)) + "."
+        frames = ".".join(["S|S|S"] * abs(pre_flow)) + "."
         frames_left = length - abs(pre_flow)
     else:
         frames_left = length
