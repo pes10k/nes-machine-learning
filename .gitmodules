@@ -1,3 +1,6 @@
 [submodule "contrib/python-midi"]
 	path = contrib/python-midi
 	url = git://github.com/vishnubob/python-midi.git
+[submodule "contrib/MIDIUtil"]
+	path = contrib/MIDIUtil
+	url = git://github.com/duggan/midiutil.git

@@ -31,7 +31,7 @@ install python-midi by running:
 
 install MIDIUtil by running:
 
- 1.	 `cd coutrib/MIDIUtil`
+ 1.	 `cd contrib/MIDIUtil`
  2.  `python setup.py install`
 
 
