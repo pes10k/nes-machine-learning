@@ -32,7 +32,7 @@ for count in range(1,count_of_songs+1):
 		while time<song_length:
 			duration = random.uniform(duration_min,duration_max)
 			pitch = random.randint(pitch_lowbound,pitch_upbound)
-			MyMIDI[count-1].addNote(track,channel,pitch,time,duration,volume)
+			MyMIDI[count-1].addNote(track,track,pitch,time,duration,volume)
 			time += duration
 		time = 0
 
