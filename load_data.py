@@ -54,6 +54,9 @@ for root, dirs, files in os.walk(test_data_dir):
         song = trim_song(song, length=2500)
         song_len = len(song[0])
 
+        if song_len<100:
+            continue
+
         print 'Length is %d.' % song_len
 
         scores = dict()
@@ -67,6 +70,10 @@ for root, dirs, files in os.walk(test_data_dir):
                 denominator_obs = ".".join(flatten_redundant_starts(frame_obs[:-1]))
                 numerator_count = store.count_for_obs(numerator_obs)
                 denominator_count = store.count_for_obs(denominator_obs)
+                if numerator_count == None:
+                    numerator_count = 1
+                if denominator_count == None:
+                    denominator_count = 1
                 score -= math.log(float(numerator_count))
                 score += math.log(float(denominator_count))
 
