@@ -25,14 +25,13 @@ duration = 1
 volume = 100
 
 for count in range(1,count_of_songs+1):
-	track = 0
-	for track in range(0,3):
+	for channel in range(0,3):
 		MyMIDI[count-1].addTrackName(track,time,"Sample Track " + str(track))
 		MyMIDI[count-1].addTempo(track,time,50)
 		while time<song_length:
 			duration = random.uniform(duration_min,duration_max)
 			pitch = random.randint(pitch_lowbound,pitch_upbound)
-			MyMIDI[count-1].addNote(track,track,pitch,time,duration,volume)
+			MyMIDI[count-1].addNote(track,channel,pitch,time,duration,volume)
 			time += duration
 		time = 0
 
