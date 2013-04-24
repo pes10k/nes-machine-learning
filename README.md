@@ -34,6 +34,10 @@ install MIDIUtil by running:
  1.	 `cd contrib/MIDIUtil`
  2.  `python setup.py install`
 
+You'll also want to generate some training counts.  You can do so with:
+
+ 1.  `python training.py` 
+
 
 Related Software
 ----------------
