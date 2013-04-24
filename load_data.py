@@ -10,10 +10,10 @@ except ImportError:
 
 data_dir = os.path.join("data")
 max_channel_to_capture = 3
-prev_frames_to_record = 3
+prev_frames_to_record = 16
 
 #test songs' path
-test_data_dir = os.path.join("test_data/Random Song")
+test_data_dir = os.path.join("test_data")
 #path of file to store scores
 score_store_path = os.path.join(os.getcwd(), test_data_dir, 'scores.data')
 
@@ -68,8 +68,6 @@ for root, dirs, files in os.walk(test_data_dir):
                 frame_obs = frame.split(".")
                 numerator_obs = frame
                 denominator_obs = ".".join(flatten_redundant_starts(frame_obs[:-1]))
-                print numerator_obs
-                print denominator_obs
                 numerator_count = store.count_for_obs(numerator_obs)
                 denominator_count = store.count_for_obs(denominator_obs)
                 if numerator_count == None:
