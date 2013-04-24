@@ -47,7 +47,7 @@ for root, dirs, files in os.walk(data_dir):
         song = trim_song(song, length=2500)
         song_len = len(song[0])
 
-        if song_len < 500:
+        if song_len < 100:
             print "Song is too short for consideration.  May be a sound effect or something trivial.  Ignoring."
             continue
 
