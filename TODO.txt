@@ -1,6 +1,6 @@
- - Decide what is a song and what is not (tonight, both)
- - Finish partition script (tonight, pete)
- - Change training.py to only build counts off training_data/* (tonight, pete)
+ DONE - Decide what is a song and what is not (tonight, both)
+ DONE - Finish partition script (tonight, pete)
+ DONE - Change training.py to only build counts off training_data/* (tonight, pete)
  - Build grading script
     - High Score on "Testing Data"
         - function song -> # (scoring function)
