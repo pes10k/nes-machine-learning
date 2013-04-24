@@ -8,17 +8,25 @@ Files
 -----
 
     data/
-        training/*.mid
-            - Midi files used for training the algorithm.  Comprises 2/3rds of
-              the midi's we've gathered
-        testing/*.mid
-            - Midi files used for testing the algorithm.  Comprises 1/3rd of the
-              midi's we've gathered
-        training_counts.data
-            - A serialized set of counts for observations in the training data.
-              The file is a pickel'd python dict, with two sub-structures, one a
-              list files that have been processed so far, and the other a dict
-              of counts, with 1 through 32-wise observations
+        raw/*
+            - All of the MIDI files that have been generated and collected so
+              far
+        all_songs/*
+            - A subset of the *raw* directory that only includes songs that
+              have been manually labeled as "songs", as opposed to empty
+              tracks, sound effects or other background songs.
+        training_songs/*
+            - A subset of the *all_songs* directory, approx 2/3 of it,
+              containing songs that should be used to generate and train
+              the algorithm with.
+        testing_songs/*
+            - A subset of the *all_songs* directory, containing the approx
+              1/3 of the songs that are not in the *training_songs* directory,
+              that should be used for testing the accuracy of the algorithm
+        training_counts.sqlite3
+            - The generated sqlite3 database of transition counts (generated
+              with the *training.py* file) based off the *training_songs*
+              directory
 
 
 Installing
@@ -36,7 +44,7 @@ install MIDIUtil by running:
 
 You'll also want to generate some training counts.  You can do so with:
 
- 1.  `python training.py` 
+ 1.  `python training.py`
 
 
 Related Software
