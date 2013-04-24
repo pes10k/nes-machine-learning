@@ -7,7 +7,7 @@ try:
 except ImportError:
     print "Error: Can't import Midi package.  Did you run `python setup.py install` from ./contrib/python-midi?"
 
-data_dir = os.path.join("data")
+data_dir = os.path.join("data", "training_songs")
 max_channel_to_capture = 3
 prev_frames_to_record = 16
 
