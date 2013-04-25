@@ -38,22 +38,12 @@ def record_file(filename):
     cur.execute('INSERT INTO training_files (filename) VALUES (?)', (filename,))
 
 
-def count_for_obs(obs, cache=True):
-    if cache:
-        try:
-            if obs in count_for_obs._cache:
-                return count_for_obs._cache[obs]
-        except:
-            count_for_obs._cache = dict()
-
+def count_for_obs(obs):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute('SELECT count FROM note_counts WHERE observation = ?', (obs,))
     row = cur.fetchone()
-    result = row[0] if row else None
-    if cache:
-        count_for_obs._cache[obs] = result
-    return result
+    return row[0] if row else None
 
 
 def record_obs(obs):

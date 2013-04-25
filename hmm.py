@@ -3,7 +3,7 @@ import store
 import utils
 
 
-def score(file_path, hmm_depth=3):
+def score(file_path, hmm_depth=3, cache=None):
     song = utils.parse_song(file_path)
     song = utils.trim_song(song, length=2500)
     song_len = len(song[0])
@@ -14,8 +14,22 @@ def score(file_path, hmm_depth=3):
         frame_obs = frame.split(".")
         numerator_obs = frame
         denominator_obs = ".".join(utils.flatten_redundant_starts(frame_obs[:-1]))
-        numerator_count = store.count_for_obs(numerator_obs)
-        denominator_count = store.count_for_obs(denominator_obs)
+
+        if cache is not None:
+            if numerator_obs in cache:
+                numerator_count = cache[numerator_obs]
+            else:
+                numerator_count = store.count_for_obs(numerator_obs)
+                cache[numerator_obs] = numerator_count
+
+            if denominator_obs in cache:
+                denominator_count = cache[denominator_obs]
+            else:
+                denominator_count = store.count_for_obs(denominator_obs)
+                cache[denominator_obs] = denominator_count
+        else:
+            numerator_count = store.count_for_obs(numerator_obs)
+            denominator_count = store.count_for_obs(denominator_obs)
 
         if numerator_count is None:
             #print "@TODO: Should smooth count for numerator: %s" % (numerator_obs)
@@ -30,5 +44,5 @@ def score(file_path, hmm_depth=3):
     return float(score) / song_len
 
 
-def get_scorer(hmm_depth):
-    return lambda file_path: score(file_path, hmm_depth)
+def get_scorer(hmm_depth, cache=None):
+    return lambda file_path: score(file_path, hmm_depth, cache)
