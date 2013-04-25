@@ -48,7 +48,8 @@ def score(file_path, hmm_depth=3, cache=None, obs=1000, smooth=True):
             denominator_count = store.count_for_obs(denominator_obs) or 0
             denominator_count += num_possible_prev_states  # if smooth else 0
 
-        scores.append(math.log(float(numerator_count) / denominator_count))
+        scores.append(math.log(float(numerator_count) / denominator_count, 10))
+
     return sum(scores)
 
 
