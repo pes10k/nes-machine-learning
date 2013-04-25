@@ -4,6 +4,14 @@ except ImportError:
     print "Error: Can't import Midi package. Did you run 'python setup.py install' from ./contrib/python-midi?"
 
 
+def score_files_with_model(file_paths, model_scorer):
+    scores = dict()
+    for path in file_paths:
+        print "Scoring " + path
+        scores[path] = model_scorer(path)
+    return scores
+
+
 def parse_song(file_path, max_channel=2):
     """Reads a MIDI file from disk and returns a dense, python representation
 

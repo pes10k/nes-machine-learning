@@ -18,16 +18,16 @@ def score(file_path, hmm_depth=3):
         denominator_count = store.count_for_obs(denominator_obs)
 
         if numerator_count is None:
-            print "SHOULD SMOOTH COUNT for numerator %s" % (numerator_obs)
+            #print "@TODO: Should smooth count for numerator: %s" % (numerator_obs)
             numerator_count = 1
 
         if denominator_count is None:
-            print "SHOULD SMOOTH COUNT for denominator %s" % (denominator_obs)
+            #print "@TODO: Should smooth count for denominator: %s" % (denominator_obs)
             denominator_count = 1
 
         score -= math.log(float(numerator_count))
         score += math.log(float(denominator_count))
-    print float(score) / song_len
+    return float(score) / song_len
 
 
 def get_scorer(hmm_depth):
