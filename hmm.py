@@ -3,7 +3,10 @@ import store
 import utils
 
 
-def score(file_path, hmm_depth=3, cache=None, obs=1000):
+num_possible_prev_states = 128 ** 3
+
+
+def score(file_path, hmm_depth=3, cache=None, obs=1000, smooth=True):
     song = utils.parse_song(file_path)
     song = utils.trim_song(song, length=2500)
     song_len = len(song[0])
@@ -29,31 +32,24 @@ def score(file_path, hmm_depth=3, cache=None, obs=1000):
             if numerator_obs in cache:
                 numerator_count = cache[numerator_obs]
             else:
-                numerator_count = store.count_for_obs(numerator_obs)
+                numerator_count = store.count_for_obs(numerator_obs) or 0
+                numerator_count += 1  # if smooth else 0
                 cache[numerator_obs] = numerator_count
 
             if denominator_obs in cache:
                 denominator_count = cache[denominator_obs]
             else:
-                denominator_count = store.count_for_obs(denominator_obs)
+                denominator_count = store.count_for_obs(denominator_obs) or 0
+                denominator_count += num_possible_prev_states  # if smooth else 0
                 cache[denominator_obs] = denominator_count
         else:
-            numerator_count = store.count_for_obs(numerator_obs)
-            denominator_count = store.count_for_obs(denominator_obs)
+            numerator_count = store.count_for_obs(numerator_obs) or 0
+            numerator_count += 1  # if smooth else 0
+            denominator_count = store.count_for_obs(denominator_obs) or 0
+            denominator_count += num_possible_prev_states  # if smooth else 0
 
-        if numerator_count is None or denominator_count is None:
-            scores.append("MIN")
-        else:
-            scores.append(math.log(float(numerator_count) / denominator_count))
-    numeric_scores = [score for score in scores if score != "MIN"]
-
-    if len(numeric_scores) == 0:
-        # @TODO What to do if every score underflows?
-        raise Exception("Every score for %s with %d depth was not found" % (file_path, hmm_depth))
-    else:
-        min_score = min(numeric_scores)
-        scores = [min_score if score is "MIN" else score for score in scores]
-        return sum(scores)
+        scores.append(math.log(float(numerator_count) / denominator_count))
+    return sum(scores)
 
 
 def get_scorer(hmm_depth, cache=None):
