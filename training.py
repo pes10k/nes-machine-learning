@@ -1,11 +1,7 @@
 import os
 import store
-from utils import trim_song, sized_observation_from_index
+from utils import trim_song, sized_observation_from_index, parse_song
 
-try:
-    import midi
-except ImportError:
-    print "Error: Can't import Midi package.  Did you run `python setup.py install` from ./contrib/python-midi?"
 
 data_dir = os.path.join("data", "training_songs")
 max_channel_to_capture = 3
@@ -23,27 +19,7 @@ for root, dirs, files in os.walk(data_dir):
             print "Beginning to calculate counts for %s" % (relative_file_path,)
             store.record_file(relative_file_path)
 
-        song = {}
-        handle = open(relative_file_path)
-        parser = midi.FileReader()
-        file_data = parser.read(handle)
-
-        for track in file_data:
-            track.make_ticks_abs()
-            note_events = [event for event in track if hasattr(event, 'channel') and event.channel < max_channel_to_capture and event.tick > 0]
-            for event in note_events:
-                channel = song.setdefault(event.channel, [])
-                channel_index = int(event.channel)
-                name = event.name
-
-                if name == "Note On":
-                    channel += ([0] * (event.tick - len(channel) - 1))
-                    channel.append(event.get_pitch())
-                elif name == "Note Off":
-                    channel += ([event.get_pitch()] * (event.tick - len(channel)))
-                else:
-                    channel += ([0] * (event.tick - len(channel)))
-
+        song = parse_song(relative_file_path)
         song = trim_song(song, length=2500)
         song_len = len(song[0])
 

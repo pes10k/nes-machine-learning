@@ -1,3 +1,44 @@
+try:
+    import midi
+except ImportError:
+    print "Error: Can't import Midi package. Did you run 'python setup.py install' from ./contrib/python-midi?"
+
+
+def parse_song(file_path, max_channel=2):
+    """Reads a MIDI file from disk and returns a dense, python representation
+
+    Args:
+        file_path -- Path to MIDI file on disk
+
+    Keyword Args:
+        max_channel -- The highest channel to return, zero indexed
+
+    Returns:
+        A dict, with each index being the channel for the corresponding data
+    """
+    handle = open(file_path)
+    parser = midi.FileReader()
+    midi_data = parser.read(handle)
+    song = {}
+
+    for track in midi_data:
+        track.make_ticks_abs()
+        note_events = [event for event in track if hasattr(event, 'channel') and event.channel <= max_channel and event.tick > 0]
+
+        for event in note_events:
+            channel = song.setdefault(event.channel, [])
+            name = event.name
+
+            if name == "Note On":
+                channel += ([0] * (event.tick - len(channel) - 1))
+                channel.append(event.get_pitch())
+            elif name == "Note Off":
+                channel += ([event.get_pitch()] * (event.tick - len(channel)))
+            else:
+                channel += ([0] * (event.tick - len(channel)))
+    return song
+
+
 def trim_song(song, length=None):
     song = normalize_song(song, length)
     song = strip_header_off_song(song)
