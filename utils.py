@@ -7,7 +7,7 @@ except ImportError:
 def score_files_with_model(file_paths, model_scorer):
     scores = dict()
     for path in file_paths:
-        print "Scoring " + path
+        print " -- Scoring " + path
         scores[path] = model_scorer(path)
     return scores
 
