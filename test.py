@@ -10,7 +10,7 @@ for root, dirs, files in os.walk(test_path):
         files_to_test.append(os.path.join(root, name))
 
 
-models = {"HMM: %d Step" % (i,): hmm.get_scorer(i) for i in range(2, 4)}
+models = {"HMM: %d Step" % (i,): hmm.get_scorer(i) for i in range(2, 16)}
 for label, model in models.items():
     print label
     scores_for_model = utils.score_files_with_model(files_to_test, model)
