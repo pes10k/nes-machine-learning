@@ -119,7 +119,7 @@ def cross_obs_count(obs_1, chan_1, obs_2=None, chan_2=None):
     if obs_2 and chan_2:
         cur.execute('SELECT count FROM cross_obs_counts WHERE obs_1 = ? AND chan_1 = ? AND obs_2 = ? AND chan_2 = ? LIMIT 1', (obs_1, chan_1, obs_2, chan_2))
     else:
-        cur.execute('SELECT SUM(count) AS count FROM cross_obs_counts WHERE obs_1 = ? AND chan_1 = ?')
+        cur.execute('SELECT SUM(count) AS count FROM cross_obs_counts WHERE obs_1 = ? AND chan_1 = ?', (obs_1, chan_1))
     row = cur.fetchone()
     return row[0] if row else None
 

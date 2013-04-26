@@ -12,7 +12,7 @@ for root, dirs, files in os.walk(test_path):
 
 model_scores = OrderedDict()
 
-for hmm_depth in range(2, 9):
+for hmm_depth in range(2, 7):
     model_label = "HMM: %d Depth" % (hmm_depth,)
     print model_label
 

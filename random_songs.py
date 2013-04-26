@@ -14,7 +14,7 @@ pitch_upbound = 100
 pitch_lowbound = 20
 duration_max = 4
 duration_min = 0
-song_length = 50
+song_length = 25
 count_of_songs = 1
 
 max_score = -1000000
@@ -22,7 +22,7 @@ min_score = 0
 
 volume = 100
 
-min_score = -150
+min_score = -87
 score = -1000
 temp_file = None
 max_tries = 100000
