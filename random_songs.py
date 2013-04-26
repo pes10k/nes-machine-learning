@@ -14,7 +14,7 @@ pitch_upbound = 100
 pitch_lowbound = 20
 duration_max = 4
 duration_min = 0
-song_length = 100
+song_length = 50
 count_of_songs = 1
 
 max_score = -1000000
@@ -22,13 +22,16 @@ min_score = 0
 
 volume = 100
 
-min_score = -5
+min_score = -150
 score = -1000
 temp_file = None
 max_tries = 100000
 tries = 0
+best_store = -100000
 
-while tries < max_tries:
+relative_file_path = "attempts/generated.mid"
+
+while score < min_score:
     tries += 1
     if temp_file:
         temp_file.close()
@@ -46,7 +49,6 @@ while tries < max_tries:
             # print "D: %d, p: %d, t: %d" % (duration, pitch, time)
             time += duration
 
-    relative_file_path = "attempts/generated.mid"
     binfile = open(relative_file_path, 'w')
     midi_scratch_file.writeFile(binfile)
     binfile.close()
@@ -55,19 +57,9 @@ while tries < max_tries:
     # temp_file = tempfile.NamedTemporaryFile()
     # midi_scratch_file.writeFile(temp_file)
     # Next, score the file using a 2-depth HMM
-    try:
-        score = hmm.score(relative_file_path, hmm_depth=5, obs=song_length)
+    score = hmm.score(relative_file_path, hmm_depth=3, obs=song_length)
+    best_store = max(best_store, score)
+    print "Got Score: %d (tries %d, best score: %d)" % (score, tries, best_store)
 
-        if score < min_score:
-            min_score = score
-            shutil.copyfile(relative_file_path, "attempts/min_generated_%d.mid" % (score,))
-
-        if score > max_score:
-            max_score = score
-            shutil.copyfile(relative_file_path, "attempts/max_generated_%d.mid" % (score,))
-
-        print "Got Score: %d (tries %d)" % (score, tries)
-    except:
-        pass
-
+shutil.copyfile(relative_file_path, "attempts/best_%d.mid" % (score,))
 print "Finished!"

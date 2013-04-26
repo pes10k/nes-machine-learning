@@ -2,7 +2,7 @@ attempts/
 *.py[cod]
 .DS_Store
 *.swp
-data/training_counts.sqlite3*
+data/*.sqlite3
 
 # C extensions
 *.so

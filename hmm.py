@@ -1,5 +1,6 @@
+import os
+import sqlite3
 import math
-import store
 import utils
 
 
@@ -32,20 +33,20 @@ def score(file_path, hmm_depth=3, cache=None, obs=1000, smooth=True):
             if numerator_obs in cache:
                 numerator_count = cache[numerator_obs]
             else:
-                numerator_count = store.count_for_obs(numerator_obs) or 0
+                numerator_count = count_for_obs(numerator_obs) or 0
                 numerator_count += 1  # if smooth else 0
                 cache[numerator_obs] = numerator_count
 
             if denominator_obs in cache:
                 denominator_count = cache[denominator_obs]
             else:
-                denominator_count = store.count_for_obs(denominator_obs) or 0
+                denominator_count = count_for_obs(denominator_obs) or 0
                 denominator_count += num_possible_prev_states  # if smooth else 0
                 cache[denominator_obs] = denominator_count
         else:
-            numerator_count = store.count_for_obs(numerator_obs) or 0
+            numerator_count = count_for_obs(numerator_obs) or 0
             numerator_count += 1  # if smooth else 0
-            denominator_count = store.count_for_obs(denominator_obs) or 0
+            denominator_count = count_for_obs(denominator_obs) or 0
             denominator_count += num_possible_prev_states  # if smooth else 0
 
         scores.append(math.log(float(numerator_count) / denominator_count, 10))
@@ -55,3 +56,63 @@ def score(file_path, hmm_depth=3, cache=None, obs=1000, smooth=True):
 
 def get_scorer(hmm_depth, cache=None):
     return lambda file_path: score(file_path, hmm_depth, cache)
+
+
+def get_connection():
+    if not hasattr(get_connection, '_conn'):
+        get_connection._conn = sqlite3.connect(os.path.join('data', 'hmm_training_counts.sqlite3'))
+        # Do a test check, just so we can create the tables if needed
+        cur = get_connection._conn.cursor()
+        try:
+            cur.execute('SELECT COUNT(*) FROM note_counts WHERE observation = "DOES NOT EXIST"')
+        except sqlite3.OperationalError:
+            setup()
+    return get_connection._conn
+
+
+def setup():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('CREATE TABLE training_files (filename text)')
+    cur.execute('CREATE TABLE note_counts (observation text, count int)')
+    cur.execute('CREATE UNIQUE INDEX filename ON training_files (filename)')
+    cur.execute('CREATE UNIQUE INDEX observation ON note_counts (observation)')
+    commit()
+
+
+def has_file_been_recorded(filename):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT COUNT(*) AS count FROM training_files WHERE filename = ?', (filename,))
+    row = cur.fetchone()
+    return row[0] > 0
+
+
+def record_file(filename):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('INSERT INTO training_files (filename) VALUES (?)', (filename,))
+
+
+def count_for_obs(obs):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT count FROM note_counts WHERE observation = ?', (obs,))
+    row = cur.fetchone()
+    return row[0] if row else None
+
+
+def record_obs(obs):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    current_count = count_for_obs(obs)
+    if current_count is None:
+        cur.execute('INSERT INTO note_counts (observation, count) VALUES (?, 1)', (obs,))
+    else:
+        cur.execute('UPDATE note_counts SET count = count + 1 WHERE observation = ?', (obs,))
+
+
+def commit():
+    conn = get_connection()
+    conn.commit()
