@@ -1,6 +1,7 @@
 import os
 import utils
 import hmm
+import bayes_net
 from collections import OrderedDict
 
 files_to_test = []
@@ -24,6 +25,13 @@ for hmm_depth in range(2, 9):
 
     print "Average Score: (%d/%d) -> %f" % (total_scores, num_scores, average_score)
     model_scores[model_label] = average_score
+
+print 'Bayes Net'
+bayes_net_scores = utils.score_files_with_model(files_to_test, bayes_net.score)
+num_scores = len(bayes_net_scores)
+total_scores = sum([score for score in bayes_net_scores.values() if score is not None])
+average_score = float(total_scores) / num_scores
+model_scores['Bayes Net'] = average_score
 
 for label, score in model_scores.items():
     print "%s: %f" % (label, score)

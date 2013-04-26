@@ -62,6 +62,7 @@ def get_scorer(hmm_depth, cache=None):
 # Data Store Related Methods
 #
 
+
 def get_connection():
     if not hasattr(get_connection, '_conn'):
         get_connection._conn = sqlite3.connect(os.path.join('data', 'hmm_training_counts.sqlite3'))
@@ -165,9 +166,9 @@ def train_on_files(files, max_hmm_order=16):
 if __name__ == "__main__":
 
     data_dir = os.path.join("data", "training_songs")
-    files = []
+    training_files = []
     for root, dirs, files in os.walk(data_dir):
         for name in [a_file for a_file in files if a_file[-4:] == ".mid"]:
-            files.append(os.path.join(root, name))
+            training_files.append(os.path.join(root, name))
 
-    train_on_files(files)
+    train_on_files(training_files)
