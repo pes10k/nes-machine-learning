@@ -2,6 +2,7 @@ import os
 import sqlite3
 import math
 import utils
+from utils import trim_song, sized_observation_from_index, parse_song
 
 
 num_possible_prev_states = 128 ** 3
@@ -57,6 +58,9 @@ def score(file_path, hmm_depth=3, cache=None, obs=1000, smooth=True):
 def get_scorer(hmm_depth, cache=None):
     return lambda file_path: score(file_path, hmm_depth, cache)
 
+#
+# Data Store Related Methods
+#
 
 def get_connection():
     if not hasattr(get_connection, '_conn'):
@@ -116,3 +120,54 @@ def record_obs(obs):
 def commit():
     conn = get_connection()
     conn.commit()
+
+
+#
+# Training Functions
+#
+
+def train_on_files(files, max_hmm_order=16):
+
+    for a_file in files:
+        if has_file_been_recorded(a_file):
+            print "Not recalculating counts for %s" % (a_file,)
+            continue
+        else:
+            print "Beginning to calculate counts for %s" % (a_file,)
+            record_file(a_file)
+
+        song = parse_song(a_file)
+        song = trim_song(song, length=2500)
+        song_len = len(song[0])
+
+        if song_len < 100:
+            print "Song is too short for consideration.  May be a sound effect or something trivial.  Ignoring."
+            continue
+
+        # for channel_name in song:
+        #     print channel_name
+        #     print song[channel_name]
+        # continue
+
+        # for x in range(0, len(song[0])):
+        #     print "|".join([str(chanel[x]) for chanel in song.values()])
+        #     #print "%d: %s" % (k, ["%03d" % (i,) for i in song[k]])
+        # break
+        record_obs('S|S|S')
+        for x in range(0, song_len):
+            for y in range(1, max_hmm_order + 1):
+                frame = sized_observation_from_index(song, start=x, length=y)
+                record_obs(frame)
+        commit()
+        print "finished calculating counts from %s" % (a_file,)
+
+
+if __name__ == "__main__":
+
+    data_dir = os.path.join("data", "training_songs")
+    files = []
+    for root, dirs, files in os.walk(data_dir):
+        for name in [a_file for a_file in files if a_file[-4:] == ".mid"]:
+            files.append(os.path.join(root, name))
+
+    train_on_files(files)
