@@ -58,7 +58,7 @@ while score < min_score:
     # midi_scratch_file.writeFile(temp_file)
     # Next, score the file using a 2-depth HMM
     score = hmm.score(relative_file_path, hmm_depth=3, obs=song_length)
-    new_best_store = max(best_store, score)
+    new_best_score = max(best_store, score)
     if new_best_score > best_score:
         best_score = new_best_score
         shutil.copyfile(relative_file_path, "attemps/score_%d.mid".format(best_score))
