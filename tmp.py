@@ -1,5 +1,5 @@
 import hmm
 
-res = hmm.all_observation(2)
+res = hmm.all_observations()
 
 print res
