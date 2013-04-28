@@ -117,6 +117,21 @@ def record_obs(obs):
     else:
         cur.execute('UPDATE note_counts SET count = count + 1 WHERE observation = ?', (obs,))
 
+def all_observation(depth):
+	conn = get_connection()
+	cur = conn.cursor()
+
+	cur.execute('SELECT observation FROM note_counts')
+	row = cur.fetchall()
+
+	ar= [str(r[0]) for r in row]
+	res=[]
+	for i in ar:
+		if not i in res:
+			if i.count('.') == depth-1:
+				res.append(str(i))
+	return res
+
 
 def commit():
     conn = get_connection()
