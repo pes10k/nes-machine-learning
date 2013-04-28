@@ -2,7 +2,7 @@ import os
 import sqlite3
 import math
 import utils
-from utils import trim_song, sized_observation_from_index, parse_song
+from utils import trim_song, sized_observation_from_index, parse_song, serialize_observation
 
 
 num_possible_prev_states = 128 ** 3
@@ -82,7 +82,20 @@ def setup():
     cur.execute('CREATE TABLE note_counts (observation text, count int)')
     cur.execute('CREATE UNIQUE INDEX filename ON training_files (filename)')
     cur.execute('CREATE UNIQUE INDEX observation ON note_counts (observation)')
+    cur.execute('CREATE TABLE all_observations (observation)')
     commit()
+
+def has_observation_been_recorded(observation):
+	conn = get_connection()
+	cur = conn.cursor()
+	cur.execute('SELECT COUNT(*) AS count FROM all_observations WHERE observation = ?', (observation,))
+	row = cur.fetchone()
+	return row[0] > 0
+
+def record_observation(observation):
+	conn = get_connection()
+	cur = conn.cursor()
+	cur.execute('INSERT INTO all_observations (observation) VALUES (?)', (observation,))
 
 
 def has_file_been_recorded(filename):
@@ -117,20 +130,15 @@ def record_obs(obs):
     else:
         cur.execute('UPDATE note_counts SET count = count + 1 WHERE observation = ?', (obs,))
 
-def all_observation(depth):
+def all_observations():
 	conn = get_connection()
 	cur = conn.cursor()
 
-	cur.execute('SELECT observation FROM note_counts')
+	cur.execute('SELECT observation FROM all_observations')
 	row = cur.fetchall()
 
 	ar= [str(r[0]) for r in row]
-	res=[]
-	for i in ar:
-		if not i in res:
-			if i.count('.') == depth-1:
-				res.append(str(i))
-	return res
+	return ar
 
 
 def commit():
@@ -171,9 +179,14 @@ def train_on_files(files, max_hmm_order=16):
         # break
         record_obs('S|S|S')
         for x in range(0, song_len):
-            for y in range(1, max_hmm_order + 1):
-                frame = sized_observation_from_index(song, start=x, length=y)
-                record_obs(frame)
+            for y in range(0, max_hmm_order + 1):
+                if y > 0:
+                    frame = sized_observation_from_index(song, start=x, length=y)
+                    record_obs(frame)
+                else:
+                    frame = serialize_observation(song, x)
+                    if not has_observation_been_recorded(frame):
+                        record_observation(frame)
         commit()
         print "finished calculating counts from %s" % (a_file,)
 
