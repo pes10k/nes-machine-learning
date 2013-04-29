@@ -1,0 +1,8 @@
+Strong Start
+	predict_songs.py --model hmm --order 4 --shake 3 --length 200 --file test.mid --start 'Mega Man 2/2.mid'
+
+Chaotic
+	predict_songs.py --model hmm --order 4 --shake 3 --length 200 --file test.mid --start 'Mega Man 2/7.mid'
+
+Daydream
+	predict_songs.py --model hmm --order 4 --shake 3 --length 200 --file test.mid --start 'Mega Man 2/8.mid'
