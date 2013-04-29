@@ -6,3 +6,9 @@ Chaotic
 
 Daydream
 	predict_songs.py --model hmm --order 4 --shake 3 --length 200 --file test.mid --start 'Mega Man 2/8.mid'
+
+Dreadful!
+	predict_songs.py --model hmm --order 4 --shake 3 --length 200 --file cast.mid --start 'Castlevania 3/3.mid'
+
+Kickn' Fill Bro
+	predict_songs.py --model hmm --order 5 --shake 3 --length 200 --file test.mid --start 'Contra/2.mid'
