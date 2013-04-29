@@ -9,7 +9,6 @@ min_smoothed_prob_log = math.log(min_smoothed_prob)
 
 
 def score_transition(song_chunk, new_frame, smooth=True):
-    print song_chunk, new_frame
     numerator_smooth, denom_smooth = (1, 128) if smooth else (0, 0)
 
     frame_1_chan_1, frame_1_chan_2, frame_1_chan_3 = [channel[-1] for channel in song_chunk]
