@@ -8,8 +8,64 @@ min_smoothed_prob = 1.0 / 128
 min_smoothed_prob_log = math.log(min_smoothed_prob)
 
 
-def score(file_path, cache=None, obs=1000):
-    song = utils.parse_song(file_path)
+def score_transition(song_chunk, new_frame, smooth=True):
+    print song_chunk, new_frame
+    numerator_smooth, denom_smooth = (1, 128) if smooth else (0, 0)
+
+    frame_1_chan_1, frame_1_chan_2, frame_1_chan_3 = [channel[-1] for channel in song_chunk]
+    frame_2_chan_1, frame_2_chan_2, frame_2_chan_3 = new_frame
+
+    frame_1_chan_2_count = cross_obs_count(frame_1_chan_2, 2)
+    frame_1_chan_3_count = cross_obs_count(frame_1_chan_3, 3)
+    frame_2_chan_1_count = inner_obs_count(frame_2_chan_1)
+
+    f1_c1_to_f2_c1_num = cross_obs_count(frame_1_chan_1, 1, frame_2_chan_1, 1)
+    if f1_c1_to_f2_c1_num is not None:
+        f1_c1_to_f2_c1_prob = math.log(float(f1_c1_to_f2_c1_num + numerator_smooth) / (cross_obs_count(frame_1_chan_1, 1) + denom_smooth), 10)
+    else:
+        f1_c1_to_f2_c1_prob = min_smoothed_prob_log
+
+    f1_c2_to_f2_c1_num = cross_obs_count(frame_1_chan_2, 2, frame_2_chan_1, 1)
+    if f1_c2_to_f2_c1_num is not None:
+        f1_c2_to_f2_c1_prob = math.log(float(f1_c2_to_f2_c1_num + numerator_smooth) / (frame_1_chan_2_count + denom_smooth), 10)
+    else:
+        f1_c2_to_f2_c1_prob = min_smoothed_prob_log
+
+    f1_c3_to_f2_c1_num = cross_obs_count(frame_1_chan_3, 3, frame_2_chan_1, 1)
+    if f1_c3_to_f2_c1_num is not None:
+        f1_c3_to_f2_c1_prob = math.log(float(f1_c3_to_f2_c1_num + numerator_smooth) / (frame_1_chan_3_count + denom_smooth), 10)
+    else:
+        f1_c3_to_f2_c1_prob = min_smoothed_prob_log
+
+    f1_c2_to_f2_c2_num = cross_obs_count(frame_1_chan_2, 2, frame_2_chan_2, 2)
+    if f1_c2_to_f2_c2_num is not None:
+        f1_c2_to_f2_c2_prob = math.log(float(f1_c2_to_f2_c2_num + numerator_smooth) / (frame_1_chan_2_count + denom_smooth), 10)
+    else:
+        f1_c2_to_f2_c2_prob = min_smoothed_prob_log
+
+    f1_c3_to_f2_c3_num = cross_obs_count(frame_1_chan_3, 3, frame_2_chan_3, 3)
+    if f1_c3_to_f2_c3_num is not None:
+        f1_c3_to_f2_c3_prob = math.log(float(f1_c3_to_f2_c3_num + numerator_smooth) / (frame_1_chan_3_count + denom_smooth), 10)
+    else:
+        f1_c3_to_f2_c3_prob = min_smoothed_prob_log
+
+    f2_c1_to_f2_c2_num = inner_obs_count(frame_2_chan_1, frame_2_chan_2, 2)
+    if f2_c1_to_f2_c2_num is not None:
+        f2_c1_to_f2_c2_prob = math.log(float(f2_c1_to_f2_c2_num + numerator_smooth) / (frame_2_chan_1_count + denom_smooth), 10)
+    else:
+        f2_c1_to_f2_c2_prob = min_smoothed_prob_log
+
+    f2_c1_to_f2_c3_num = inner_obs_count(frame_2_chan_1, frame_2_chan_3, 3)
+    if f2_c1_to_f2_c3_num is not None:
+        f2_c1_to_f2_c3_prob = math.log(float(f2_c1_to_f2_c3_num + numerator_smooth) / (frame_2_chan_1_count + denom_smooth), 10)
+    else:
+        f2_c1_to_f2_c3_prob = min_smoothed_prob_log
+
+    return f1_c1_to_f2_c1_prob + f1_c2_to_f2_c1_prob + f1_c3_to_f2_c1_prob + f1_c2_to_f2_c2_prob + f1_c3_to_f2_c3_prob + f2_c1_to_f2_c2_prob + f2_c1_to_f2_c3_prob
+
+
+def score(data, cache=None, obs=1000, smooth=False, check_len=True):
+    song = data if isinstance(data, list) else utils.parse_song(data)
     song = utils.trim_song(song, length=2500)
     song_len = len(song[0])
 
@@ -18,65 +74,19 @@ def score(file_path, cache=None, obs=1000):
     # things to a fixed number of observations to normalize the lenght
     # of observations per file, intestead of normalizing the probabilities
     # of different length songs
-    if song_len < obs:
-        print " !! %s is too short (%d)" % (file_path, song_len)
+    if check_len and song_len < obs:
+        print " !! %s is too short (%d)" % (data, song_len)
         return None
+
+    numerator_smooth, denom_smooth = (1, 128) if smooth else (0, 0)
 
     scores = []
 
     for x in range(0, obs):
         frame = utils.sized_observation_from_index(song, start=x, length=2)
         frame_1, frame_2 = frame.split(".")
-        frame_1_chan_1, frame_1_chan_2, frame_1_chan_3 = frame_1.split("|")
-        frame_2_chan_1, frame_2_chan_2, frame_2_chan_3 = frame_2.split("|")
+        scores.append(score_transition(frame_1.split("|"), frame_2.split("|"), smooth))
 
-        frame_1_chan_2_count = cross_obs_count(frame_1_chan_2, 2)
-        frame_1_chan_3_count = cross_obs_count(frame_1_chan_3, 3)
-        frame_2_chan_1_count = inner_obs_count(frame_2_chan_1)
-
-        f1_c1_to_f2_c1_num = cross_obs_count(frame_1_chan_1, 1, frame_2_chan_1, 1)
-        if f1_c1_to_f2_c1_num is not None:
-            f1_c1_to_f2_c1_prob = math.log(float(f1_c1_to_f2_c1_num + 1) / (cross_obs_count(frame_1_chan_1, 1) + 128), 10)
-        else:
-            f1_c1_to_f2_c1_prob = min_smoothed_prob_log
-
-        f1_c2_to_f2_c1_num = cross_obs_count(frame_1_chan_2, 2, frame_2_chan_1, 1)
-        if f1_c2_to_f2_c1_num is not None:
-            f1_c2_to_f2_c1_prob = math.log(float(f1_c2_to_f2_c1_num + 1) / (frame_1_chan_2_count + 128), 10)
-        else:
-            f1_c2_to_f2_c1_prob = min_smoothed_prob_log
-
-        f1_c3_to_f2_c1_num = cross_obs_count(frame_1_chan_3, 3, frame_2_chan_1, 1)
-        if f1_c3_to_f2_c1_num is not None:
-            f1_c3_to_f2_c1_prob = math.log(float(f1_c3_to_f2_c1_num + 1) / (frame_1_chan_3_count + 128), 10)
-        else:
-            f1_c3_to_f2_c1_prob = min_smoothed_prob_log
-
-        f1_c2_to_f2_c2_num = cross_obs_count(frame_1_chan_2, 2, frame_2_chan_2, 2)
-        if f1_c2_to_f2_c2_num is not None:
-            f1_c2_to_f2_c2_prob = math.log(float(f1_c2_to_f2_c2_num + 1) / (frame_1_chan_2_count + 128), 10)
-        else:
-            f1_c2_to_f2_c2_prob = min_smoothed_prob_log
-
-        f1_c3_to_f2_c3_num = cross_obs_count(frame_1_chan_3, 3, frame_2_chan_3, 3)
-        if f1_c3_to_f2_c3_num is not None:
-            f1_c3_to_f2_c3_prob = math.log(float(f1_c3_to_f2_c3_num + 1) / (frame_1_chan_3_count + 128), 10)
-        else:
-            f1_c3_to_f2_c3_prob = min_smoothed_prob_log
-
-        f2_c1_to_f2_c2_num = inner_obs_count(frame_2_chan_1, frame_2_chan_2, 2)
-        if f2_c1_to_f2_c2_num is not None:
-            f2_c1_to_f2_c2_prob = math.log(float(f2_c1_to_f2_c2_num + 1) / (frame_2_chan_1_count + 128), 10)
-        else:
-            f2_c1_to_f2_c2_prob = min_smoothed_prob_log
-
-        f2_c1_to_f2_c3_num = inner_obs_count(frame_2_chan_1, frame_2_chan_3, 3)
-        if f2_c1_to_f2_c3_num is not None:
-            f2_c1_to_f2_c3_prob = math.log(float(f2_c1_to_f2_c3_num + 1) / (frame_2_chan_1_count + 128), 10)
-        else:
-            f2_c1_to_f2_c3_prob = min_smoothed_prob_log
-
-        scores.append(f1_c1_to_f2_c1_prob + f1_c2_to_f2_c1_prob + f1_c3_to_f2_c1_prob + f1_c2_to_f2_c2_prob + f1_c3_to_f2_c3_prob + f2_c1_to_f2_c2_prob + f2_c1_to_f2_c3_prob)
     return sum(scores)
 
 #
@@ -223,10 +233,5 @@ def train_on_files(files):
 
 if __name__ == "__main__":
 
-    data_dir = os.path.join("data", "training_songs")
-    training_files = []
-    for root, dirs, files in os.walk(data_dir):
-        for name in [a_file for a_file in files if a_file[-4:] == ".mid"]:
-            training_files.append(os.path.join(root, name))
-
-    train_on_files(training_files)
+    from song_collections import training_songs
+    train_on_files(training_songs)

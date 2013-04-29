@@ -3,6 +3,33 @@ try:
 except ImportError:
     print "Error: Can't import Midi package. Did you run 'python setup.py install' from ./contrib/python-midi?"
 
+try:
+    from midiutil.MidiFile import MIDIFile
+except ImportError:
+    print "Error: Can't import midiutil package. Did you run `python setup.py install` from ./contrib/MIDIUtil?"
+
+
+def write_song(song, dest, tempo=240):
+    num_channels = len(song)
+    midi_scratch_file = MIDIFile(num_channels)
+    for i in range(0, num_channels):
+        midi_scratch_file.addTrackName(i, 0, "Pop Flute {0}".format(i))
+        midi_scratch_file.addTempo(i, 0, tempo)
+        time = 0
+        for x in range(0, song_length(song)):
+            duration = 0.5
+            pitch = song[i][x]
+            midi_scratch_file.addNote(i, i, pitch, time, duration, 100)
+            time += duration
+
+    bin_file = open(dest, 'w')
+    midi_scratch_file.writeFile(bin_file)
+    bin_file.close()
+
+
+def song_length(song):
+    return len(song[0])
+
 
 def score_files_with_model(file_paths, model_scorer):
     scores = dict()
@@ -27,23 +54,22 @@ def parse_song(file_path, max_channel=2):
     handle = open(file_path)
     parser = midi.FileReader()
     midi_data = parser.read(handle)
-    song = {}
+    song = [[], [], []]
 
     for track in midi_data:
         track.make_ticks_abs()
         note_events = [event for event in track if hasattr(event, 'channel') and event.channel <= max_channel and event.tick > 0]
 
         for event in note_events:
-            channel = song.setdefault(event.channel, [])
             name = event.name
 
             if name == "Note On":
-                channel += ([0] * (event.tick - len(channel) - 1))
-                channel.append(event.get_pitch())
+                song[event.channel] += ([0] * (event.tick - len(song[event.channel]) - 1))
+                song[event.channel].append(event.get_pitch())
             elif name == "Note Off":
-                channel += ([event.get_pitch()] * (event.tick - len(channel)))
+                song[event.channel] += ([event.get_pitch()] * (event.tick - len(song[event.channel])))
             else:
-                channel += ([0] * (event.tick - len(channel)))
+                song[event.channel] += ([0] * (event.tick - len(song[event.channel])))
     return song
 
 
@@ -55,37 +81,37 @@ def trim_song(song, length=None):
 
 
 def normalize_song(song, length=None):
-    """Make sure that all tracks in the song have the same lenght, equal
+    """Make sure that all tracks in the song have the same length, equal
     to the shortest track"""
-    channel_sizes = [len(channel) for k, channel in song.items()]
+    channel_sizes = [len(channel) for channel in song]
     if length:
         channel_sizes.append(length)
     min_length = min(channel_sizes)
-    return {k: v[:min_length] for k, v in song.items()}
+    return [channel[:min_length] for channel in song]
 
 
 def strip_header_off_song(song):
+
     # First check for the trivial corner case of having an empty song
-    is_empty = sum([sum(channel) for channel in song.values()]) == 0
+    is_empty = sum([sum(channel) for channel in song]) == 0
 
     if is_empty:
-        return {i: [] for i in range(0, 3)}
+        return [[]] * 3
     else:
         index = 0
-        while sum([track[index] for track in song.values()]) == 0:
+        while sum([channel[index] for channel in song]) == 0:
             index += 1
-        return {k: v[index:] for k, v in song.items()}
+        return [channel[index:] for channel in song]
 
 
 def strip_end_off_song(song):
-    song = {k: v[::-1] for k, v in song.items()}
+    song = [channel[::-1] for channel in song]
     song = strip_header_off_song(song)
-    return {k: v[::-1] for k, v in song.items()}
+    return [channel[::-1] for channel in song]
 
 
 def serialize_observation(song, index):
-    current_observation = [str(chan_data[index]) for chan_data in song.values()]
-    return "|".join(current_observation)
+    return "|".join([str(channel[index]) for channel in song])
 
 
 def flatten_redundant_starts(frames):
@@ -105,8 +131,7 @@ def flatten_redundant_starts(frames):
     return frames
 
 
-def sized_observation_from_index(song, start=0, length=1):
-    song_length = len(song[0])
+def sized_observation_from_index(song, start=0, length=1, serialize=True):
     pre_flow = (start - length) + 1
     frames_left = 0
 
