@@ -8,53 +8,64 @@ min_smoothed_prob = 1.0 / 128
 min_smoothed_prob_log = math.log(min_smoothed_prob)
 
 
-def score_transition(song_chunk, new_frame, smooth=True):
-    numerator_smooth, denom_smooth = (1, 128) if smooth else (0, 0)
+def _cache(cache, func, *args):
+    if cache is not None:
+        try:
+            return cache[args]
+        except:
+            value = func(*args)
+            cache[args] = value
+            return value
+    else:
+        return func(*args)
 
+
+def score_transition(song_chunk, new_frame, smooth=True, cache=None):
+    numerator_smooth, denom_smooth = (1, 128) if smooth else (0, 0)
     frame_1_chan_1, frame_1_chan_2, frame_1_chan_3 = [channel[-1] for channel in song_chunk]
     frame_2_chan_1, frame_2_chan_2, frame_2_chan_3 = new_frame
 
-    frame_1_chan_2_count = cross_obs_count(frame_1_chan_2, 2)
-    frame_1_chan_3_count = cross_obs_count(frame_1_chan_3, 3)
-    frame_2_chan_1_count = inner_obs_count(frame_2_chan_1)
+    frame_1_chan_2_count = _cache(cache, cross_obs_count, frame_1_chan_2, 2)
+    frame_1_chan_3_count = _cache(cache, cross_obs_count, frame_1_chan_3, 3)
+    frame_2_chan_1_count = _cache(cache, inner_obs_count, frame_2_chan_1)
 
-    f1_c1_to_f2_c1_num = cross_obs_count(frame_1_chan_1, 1, frame_2_chan_1, 1)
+    f1_c1_to_f2_c1_num = _cache(cache, cross_obs_count, frame_1_chan_1, 1, frame_2_chan_1, 1)
     if f1_c1_to_f2_c1_num is not None:
-        f1_c1_to_f2_c1_prob = math.log(float(f1_c1_to_f2_c1_num + numerator_smooth) / (cross_obs_count(frame_1_chan_1, 1) + denom_smooth), 10)
+        f1_c1_to_f2_c1_prob = math.log(float(f1_c1_to_f2_c1_num + numerator_smooth) / (_cache(cache, cross_obs_count, frame_1_chan_1, 1) + denom_smooth), 10)
     else:
         f1_c1_to_f2_c1_prob = min_smoothed_prob_log
 
-    f1_c2_to_f2_c1_num = cross_obs_count(frame_1_chan_2, 2, frame_2_chan_1, 1)
+    f1_c2_to_f2_c1_num = _cache(cache, cross_obs_count, frame_1_chan_2, 2, frame_2_chan_1, 1)
     if f1_c2_to_f2_c1_num is not None:
         f1_c2_to_f2_c1_prob = math.log(float(f1_c2_to_f2_c1_num + numerator_smooth) / (frame_1_chan_2_count + denom_smooth), 10)
     else:
         f1_c2_to_f2_c1_prob = min_smoothed_prob_log
 
-    f1_c3_to_f2_c1_num = cross_obs_count(frame_1_chan_3, 3, frame_2_chan_1, 1)
+    f1_c3_to_f2_c1_num = _cache(cache, cross_obs_count, frame_1_chan_3, 3, frame_2_chan_1, 1)
     if f1_c3_to_f2_c1_num is not None:
         f1_c3_to_f2_c1_prob = math.log(float(f1_c3_to_f2_c1_num + numerator_smooth) / (frame_1_chan_3_count + denom_smooth), 10)
     else:
         f1_c3_to_f2_c1_prob = min_smoothed_prob_log
 
-    f1_c2_to_f2_c2_num = cross_obs_count(frame_1_chan_2, 2, frame_2_chan_2, 2)
+    f1_c2_to_f2_c2_num = _cache(cache, cross_obs_count, frame_1_chan_2, 2, frame_2_chan_2, 2)
     if f1_c2_to_f2_c2_num is not None:
         f1_c2_to_f2_c2_prob = math.log(float(f1_c2_to_f2_c2_num + numerator_smooth) / (frame_1_chan_2_count + denom_smooth), 10)
     else:
         f1_c2_to_f2_c2_prob = min_smoothed_prob_log
 
-    f1_c3_to_f2_c3_num = cross_obs_count(frame_1_chan_3, 3, frame_2_chan_3, 3)
+    f1_c3_to_f2_c3_num = _cache(cache, cross_obs_count, frame_1_chan_3, 3, frame_2_chan_3, 3)
     if f1_c3_to_f2_c3_num is not None:
         f1_c3_to_f2_c3_prob = math.log(float(f1_c3_to_f2_c3_num + numerator_smooth) / (frame_1_chan_3_count + denom_smooth), 10)
     else:
         f1_c3_to_f2_c3_prob = min_smoothed_prob_log
 
-    f2_c1_to_f2_c2_num = inner_obs_count(frame_2_chan_1, frame_2_chan_2, 2)
+    f2_c1_to_f2_c2_num = _cache(cache, inner_obs_count, frame_2_chan_1, frame_2_chan_2, 2)
     if f2_c1_to_f2_c2_num is not None:
         f2_c1_to_f2_c2_prob = math.log(float(f2_c1_to_f2_c2_num + numerator_smooth) / (frame_2_chan_1_count + denom_smooth), 10)
     else:
         f2_c1_to_f2_c2_prob = min_smoothed_prob_log
 
-    f2_c1_to_f2_c3_num = inner_obs_count(frame_2_chan_1, frame_2_chan_3, 3)
+    f2_c1_to_f2_c3_num = _cache(cache, inner_obs_count, frame_2_chan_1, frame_2_chan_3, 3)
     if f2_c1_to_f2_c3_num is not None:
         f2_c1_to_f2_c3_prob = math.log(float(f2_c1_to_f2_c3_num + numerator_smooth) / (frame_2_chan_1_count + denom_smooth), 10)
     else:

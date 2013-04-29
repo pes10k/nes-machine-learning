@@ -20,22 +20,22 @@ def score_transition(song_chunk, new_frame, smooth=True, cache=None):
             numerator_count = cache[numerator_obs]
         else:
             numerator_count = count_for_obs(numerator_obs) or 0
-            numerator_count += 1  # if smooth else 0
+            numerator_count += 1 if smooth else 0
             cache[numerator_obs] = numerator_count
 
         if denominator_obs in cache:
             denominator_count = cache[denominator_obs]
         else:
             denominator_count = count_for_obs(denominator_obs) or 0
-            denominator_count += num_possible_prev_states  # if smooth else 0
+            denominator_count += num_possible_prev_states if smooth else 0
             cache[denominator_obs] = denominator_count
     else:
         numerator_count = count_for_obs(numerator_obs) or 0
-        numerator_count += 1  # if smooth else 0
+        numerator_count += 1 if smooth else 0
         denominator_count = count_for_obs(denominator_obs) or 0
-        denominator_count += num_possible_prev_states  # if smooth else 0
+        denominator_count += num_possible_prev_states if smooth else 0
 
-    return math.log(float(numerator_count) / denominator_count, 10)
+    return None if numerator_count == 0 and not smooth else math.log(float(numerator_count) / denominator_count, 10)
 
 
 def score(data, hmm_depth=3, cache=None, obs=1000, smooth=True, check_len=True):
@@ -58,7 +58,7 @@ def score(data, hmm_depth=3, cache=None, obs=1000, smooth=True, check_len=True):
         frame = utils.sized_observation_from_index(song, start=x, length=hmm_depth)
         frame_obs = frame.split(".")
         top_frame = frame_obs[-1].split("|")
-        song_chunk = [[]] * 3
+        song_chunk = [[], [], []]
         for a_frame in frame_obs[:-1]:
             note_1, note_2, note_3 = a_frame.split("|")
             song_chunk[0].append(note_1)

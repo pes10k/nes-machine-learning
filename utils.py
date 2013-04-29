@@ -96,7 +96,7 @@ def strip_header_off_song(song):
     is_empty = sum([sum(channel) for channel in song]) == 0
 
     if is_empty:
-        return [[]] * 3
+        return [[], [], []]
     else:
         index = 0
         while sum([channel[index] for channel in song]) == 0:
