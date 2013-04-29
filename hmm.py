@@ -8,13 +8,13 @@ from utils import trim_song, sized_observation_from_index, parse_song, serialize
 num_possible_prev_states = 128 ** 3
 
 
-def score_transition(song_chunk, new_frame, smooth=True, cache=False):
+def score_transition(song_chunk, new_frame, smooth=True, cache=None):
     num_frames = utils.song_length(song_chunk)
     prev_frames = ["|".join([str(song_chunk[0][i]), str(song_chunk[1][i]), str(song_chunk[2][i])]) for i in range(0, num_frames)]
 
     denominator_obs = ".".join(prev_frames)
     numerator_obs = denominator_obs + "." + "|".join([str(n) for n in new_frame])
-    print denominator_obs, numerator_obs
+
     if cache is not None:
         if numerator_obs in cache:
             numerator_count = cache[numerator_obs]
