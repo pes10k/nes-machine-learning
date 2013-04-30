@@ -119,7 +119,7 @@ if __name__ == "__main__":
         filters = (
             require_lead,
             no_repeats,
-            no_empties
+            # no_empties
         )
 
         for a_filter in filters:
