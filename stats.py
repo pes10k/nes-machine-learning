@@ -20,7 +20,7 @@ for label, model in models.items():
 writer.writerow(header_row)
 
 random_model_values = []
-for i in len(models):
+for i in range(len(models)):
     random_model_values.append(list())
 
 for song in song_collections.random_songs:
