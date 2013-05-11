@@ -10,6 +10,8 @@ for root, dirs, files in os.walk(test_path):
     for name in [a_file for a_file in files if a_file[-4:] == ".mid"]:
         files_to_test.append(os.path.join(root, name))
 
+log_path = "log";
+
 model_scores = OrderedDict()
 
 for hmm_depth in range(2, 7):
@@ -23,6 +25,17 @@ for hmm_depth in range(2, 7):
     total_scores = sum([score for score in scores_for_model.values() if score is not None])
     average_score = float(total_scores) / num_scores
 
+    log_name = "HMM_" + str(hmm_depth) + ".txt";
+    log_file_full_path = os.path.join(log_path,log_name);
+    f = open(log_file_full_path, "w");
+    index = 1
+    for score in scores_for_model.values():
+        if score is not None:
+            print >> f, "%d %f" % (index, score)
+            index+=1
+    f.close()
+
+
     print "Average Score: (%d/%d) -> %f" % (total_scores, num_scores, average_score)
     model_scores[model_label] = average_score
 
@@ -32,6 +45,20 @@ num_scores = len(bayes_net_scores)
 total_scores = sum([score for score in bayes_net_scores.values() if score is not None])
 average_score = float(total_scores) / num_scores
 model_scores['Bayes Net'] = average_score
+log_name = "bayes_net_scores.txt"
+log_file_full_path = os.path.join(log_path, log_name)
+f = open(log_file_full_path, "w");
+index = 1
+for score in bayes_net_scores.values():
+    if score is not None:
+        print >> f, "%d %f" % (index, score)
+        index+=1
+f.close();
 
+log_name = "model_aver_scores.txt"
+log_file_full_path = os.path.join(log_path, log_name)
+f = open(log_file_full_path, "w");
 for label, score in model_scores.items():
     print "%s: %f" % (label, score)
+    print >> f, "%s: %f" % (label, score)
+f.close();
